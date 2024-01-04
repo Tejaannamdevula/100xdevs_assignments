@@ -41,9 +41,143 @@
  */
   const express = require('express');
   const bodyParser = require('body-parser');
+  const {v4:uuidv4}  = require('uuid');
   
   const app = express();
   
+  // const port  = 3000;
   app.use(bodyParser.json());
+
+  // const todo =[
+
+    // { id : '1',
+    //   title:'html',
+    // description:'structure of web page'},
+
+  //   { id:'2',
+  //     title:'css',
+  //     description:'styling of web page'},
+
+  //   { id:'3',
+  //     title:'js',
+  //     description:'functionality of web page'},
+
+  //   ];
+
+    const todo =[];
+
+  app.get('/todos',(req,res)=>{
+    // GET /todos - Retrieve all todo items
+    // Description: Returns a list of all todo items.
+    // Response: 200 OK with an array of todo items in JSON format.
+    // Example: GET http://localhost:3000/todos
+    res.status(200).json(todo);
+
+
+  });
+
+  app.get('/todos/:id',(req,res)=>{
+
+    // GET /todos/:id - Retrieve a specific todo item by ID
+    // Description: Returns a specific todo item identified by its ID.
+    // Response: 200 OK with the todo item in JSON format if found, or 404 Not Found if not found.
+    // Example: GET http://localhost:3000/todos/123
+
+    // const id = req.params.id;
+    // const todoIndex  = todo.findIndex((todo) => todo.id === id);
+
+    const id = req.params.id;
+    const todoIndex = todo.findIndex((todo)=> todo.id === id);
+    if(todo[todoIndex]){
+    res.status(200).json(todo[todoIndex]);
+    }else{
+      res.status(404).send('Id not found');
+    }
+  });
+
+  app.post('/todos',(req,res)=>{
+
+
+    // POST /todos - Create a new todo item
+    // Description: Creates a new todo item.
+    // Request Body: JSON object representing the todo item.
+    // Response: 201 Created with the ID of the created todo item in JSON format. eg: {id: 1}
+    // Example: POST http://localhost:3000/todos
+    // Request Body: { "title": "Buy groceries", "completed": false, description: "I should buy groceries" }
+
+    let newId;
+    do{
+
+      newId = uuidv4();
+
+    }while(todo.some((todo)=> todo.id === newId));
+
+      const newTodo ={
+        id : newId,
+        title:req.body.title,
+        description:req.body.description
+      };
+
+      todo.push(newTodo);
+      res.status(201).json(newTodo);
+
+  });
+
+  app.put('/todos/:id',(req,res)=>{
+
+    // PUT /todos/:id - Update an existing todo item by ID
+    // Description: Updates an existing todo item identified by its ID.
+    // Request Body: JSON object representing the updated todo item.
+    // Response: 200 OK if the todo item was found and updated, or 404 Not Found if not found.
+    // Example: PUT http://localhost:3000/todos/123
+    // Request Body: { "title": "Buy groceries", "completed": true }
+
+    const id = req.params.id;
+    const todoIndex = todo.findIndex((todo)=> todo.id === id);
+
+    if(todo[todoIndex]){
+      todo[todoIndex].title = req.body.title;
+      todo[todoIndex].description = req.body.description;
+      res.status(200).json(todo[todoIndex]);
+    }else{
+        res.status(404).send('Id not found');
+    }
+
+  });
+
+  app.delete('/todos/:id',(req,res)=>{
+
+    // DELETE /todos/:id - Delete a todo item by ID
+    // Description: Deletes a todo item identified by its ID.
+    // Response: 200 OK if the todo item was found and deleted, or 404 Not Found if not found.
+    // Example: DELETE http://localhost:3000/todos/123
+
+    const id = req.params.id;
+    const todoIndex = todo.findIndex((todo) => todo.id === id);
+    if(todo[todoIndex]){
+      todo.splice(todoIndex,1);
+      res.send("Item deleted");
+    }else{
+      res.status(404).send('Not found');
+    }
+
+
+
+
+  });
+
+  app.all('*',(req,res)=>{
+    res.status(404).send('Internal server error');
+  })
+
+  // app.listen(3000,(req,res)=>{
+  //   console.log('Server is listening at port 3000');
+  // });
+
+  
   
   module.exports = app;
+
+  // app.listen(port,(req,res)=>{
+  //   console.log(`server is listening at ${port}`);
+  // });

@@ -13,9 +13,55 @@
     Testing the server - run `npm run test-fileServer` command in terminal
  */
 const express = require('express');
+const fsp = require('fs').promises;
 const fs = require('fs');
 const path = require('path');
 const app = express();
 
+// const port = 3000;
+const filePath = './files/'
 
+
+
+
+app.get('/files',async (req,res)=>{
+  // try{
+  //   const files = await fs.readdir(filePath);
+  //   console.log('Files in directory:', files); 
+  //   res.status(200).json(files);   
+  // }catch(err){
+  //   console.error('Error reading files:', err);
+  //   res.status(500).send('Internal Server Error');
+  // }
+  // when using fs. promises and aync await
+
+  fs.readdir(filePath,(err,files)=>{
+    if(err){
+      res.status(500).send('Internal server error');
+    }else{
+      res.status(200).json(files);
+    }
+  })
+});
+
+app.get('/file/:filename', async (req,res)=>{
+  const filename = req.params.filename;
+  try{
+    const content  = await fsp.readFile(path.join(__dirname,'files',filename));
+    res.status(200).send(content);
+  }catch(err){
+    console.log(err);
+    res.status(404).send("File not found");
+
+  }
+});
+
+app.all('*', (req, res) => {
+  res.status(404).send('Route not found');
+});
+
+// app.listen(port,()=>{
+//   console.log( `server is listening at port ${port}`);
+// });
 module.exports = app;
+
